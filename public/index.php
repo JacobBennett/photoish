@@ -42,12 +42,20 @@ $app->get('/i', function () use ($app) {
         'cache' => $cache = new League\Flysystem\Filesystem(new League\Flysystem\AwsS3v3\AwsS3Adapter($client, getenv('S3_BUCKET'), 'cache')),
     ]);
 
-    $filename = md5(app('request')->fullUrl());
+    $request = app('request');
+
+    $fullUrl = $request->fullUrl();
+
+    if ($request->has('zbust')) {
+        $fullUrl = str_replace("&zbust={$request->zbust}", '', $fullUrl);
+    }
+
+    $filename = md5($fullUrl);
 
     // If this file isn't cached or 
     // we arent busting it download it 
     // and store it in the S3 source
-    if (! $cache->has($filename) || app('request')->has('bust')) {
+    if (! $cache->has($filename) || app('request')->has('zbust')) {
         // Download the image
         $ch = curl_init(app('request')->get('image'));
         curl_setopt($ch, CURLOPT_HEADER, 0);
