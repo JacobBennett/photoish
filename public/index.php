@@ -44,9 +44,10 @@ $app->get('/i', function () use ($app) {
 
     $filename = md5(app('request')->fullUrl());
 
-    // If this file isn't cached, download it 
+    // If this file isn't cached or 
+    // we arent busting it download it 
     // and store it in the S3 source
-    if (! $cache->has($filename)) {
+    if (! $cache->has($filename) || app('request')->has('bust')) {
         // Download the image
         $ch = curl_init(app('request')->get('image'));
         curl_setopt($ch, CURLOPT_HEADER, 0);
